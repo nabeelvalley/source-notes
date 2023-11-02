@@ -53,6 +53,7 @@ const selectedTextDecorationType = window.createTextEditorDecorationType({
 
 const save = (editor: TextEditor, note: string) => {
   console.log(editor, note)
+  window.showInformationMessage("Note saved successfully")
 }
 
 export function activate(context: ExtensionContext) {

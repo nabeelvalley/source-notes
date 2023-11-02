@@ -85,6 +85,7 @@ var selectedTextDecorationType = import_vscode2.window.createTextEditorDecoratio
 });
 var save = (editor, note) => {
   console.log(editor, note);
+  import_vscode2.window.showInformationMessage("Note saved successfully");
 };
 function activate(context) {
   const webviewOptions = {
