@@ -54,33 +54,6 @@ var view = (nonce, webviewUri, styleUri, codiconsUri) => html`
     
     <link rel="stylesheet" href="${styleUri}?${nonce}">
     <link rel="stylesheet" href="${codiconsUri}?${nonce}">
-    <style>
-    html, body {
-      margin: 0;
-      padding-left: 0;
-      height: 100%;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-
-    main {
-      display: grid;
-      grid-auto-flow: row;
-      gap: 0.5rem;
-    }
-    
-    .header {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      border: solid 0px var(--vscode-focusBorder);
-      border-width: 1px 0px;
-    }
-</style>
   <script type="module" src="${webviewUri}?${nonce}"></script>
   </head>
   <body>
@@ -88,13 +61,13 @@ var view = (nonce, webviewUri, styleUri, codiconsUri) => html`
       <div class="header">
         <div>Add Note</div>
         <div>
-          <vscode-button appearance="icon" aria-label="Confirm">
+          <vscode-button id="close" appearance="icon" aria-label="Confirm">
             <span class="codicon codicon-close"></span>
           </vscode-button>
         </div>
       </div>
 
-      <vscode-text-area rows=5></vscode-text-area>
+      <vscode-text-area id="note" rows=5></vscode-text-area>
       <vscode-button id="submit">Create Note</vscode-button>
     </main>
   </body>
@@ -102,7 +75,7 @@ var view = (nonce, webviewUri, styleUri, codiconsUri) => html`
 `;
 var webviewContent = (webview, extensionUri) => {
   const webviewUri = getUri(webview, extensionUri, ["out", "webview.js"]);
-  const styleUri = getUri(webview, extensionUri, ["out", "style.css"]);
+  const styleUri = getUri(webview, extensionUri, ["src", "webview", "style.css"]);
   const codiconsUri = getUri(webview, extensionUri, ["node_modules", "@vscode/codicons", "dist", "codicon.css"]);
   const nonce = getNonce();
   return view(nonce, webviewUri, styleUri, codiconsUri);
@@ -110,11 +83,18 @@ var webviewContent = (webview, extensionUri) => {
 var selectedTextDecorationType = import_vscode2.window.createTextEditorDecorationType({
   backgroundColor: new import_vscode2.ThemeColor("peekViewResult.selectionBackground")
 });
+var save = (editor, note) => {
+  console.log(editor, note);
+};
 function activate(context) {
   const webviewOptions = {
     enableForms: true,
     enableScripts: true,
-    localResourceRoots: [import_vscode3.Uri.joinPath(context.extensionUri, "out"), import_vscode3.Uri.joinPath(context.extensionUri, "node_modules", "@vscode")],
+    localResourceRoots: [
+      import_vscode3.Uri.joinPath(context.extensionUri, "out"),
+      import_vscode3.Uri.joinPath(context.extensionUri, "src/webview"),
+      import_vscode3.Uri.joinPath(context.extensionUri, "node_modules", "@vscode")
+    ],
     enableCommandUris: true
   };
   const command = import_vscode2.commands.registerCommand("source-notes.showHelloWorld", () => {
@@ -125,8 +105,16 @@ function activate(context) {
     const { start, end } = editor.selection;
     const decoration = { range: new import_vscode2.Range(start, end) };
     editor.setDecorations(selectedTextDecorationType, [decoration]);
-    const bottomInset = import_vscode2.window.createWebviewTextEditorInset(editor, end.line, 10, webviewOptions);
-    bottomInset.webview.html = webviewContent(bottomInset.webview, context.extensionUri);
+    const inset = import_vscode2.window.createWebviewTextEditorInset(editor, end.line, 10, webviewOptions);
+    inset.webview.html = webviewContent(inset.webview, context.extensionUri);
+    inset.webview.onDidReceiveMessage((message) => {
+      console.log(message);
+      if (message.type === "submit") {
+        save(editor, message.note);
+      }
+      inset.dispose();
+      editor.setDecorations(selectedTextDecorationType, []);
+    });
   });
   context.subscriptions.push(command);
 }

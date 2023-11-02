@@ -1,6 +1,25 @@
 html, body {
-    background-color: pink;
     margin: 0;
-    padding: 0;
+    padding-left: 0;
     height: 100%;
-}
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    display: grid;
+    grid-auto-flow: row;
+    gap: 0.5rem;
+  }
+  
+  .header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border: solid 0px var(--vscode-focusBorder);
+    border-width: 1px 0px;
+  }

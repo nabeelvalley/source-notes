@@ -11784,17 +11784,13 @@ var allComponents = {
 provideVSCodeDesignSystem().register(allComponents);
 var vscode = acquireVsCodeApi();
 function main() {
-  const howdyButton = document.getElementById("howdy");
-  howdyButton?.addEventListener("click", handleHowdyClick);
-}
-function handleHowdyClick() {
-  vscode.postMessage({
-    command: "hello",
-    text: "Hey there partner! \u{1F920}"
-  });
+  const submit = document.getElementById("submit");
+  const note = document.getElementById("note");
+  submit.addEventListener("click", () => vscode.postMessage({ type: "submit", note: note.value }));
+  const close = document.getElementById("close");
+  close.addEventListener("click", () => vscode.postMessage({ type: "close" }));
 }
 window.addEventListener("load", main);
-console.log("webview script loaded");
 /*! Bundled license information:
 
 tslib/tslib.es6.js:
