@@ -19,7 +19,7 @@ export interface ExtensionData {
   notes?: Partial<Note>[];
 }
 
-const getExtensionData = async (documentUri: vscode.Uri) => {
+export const getExtensionData = async (documentUri: vscode.Uri) => {
   const documentDir = vscode.workspace.getWorkspaceFolder(documentUri);
 
   if (!documentDir) {
@@ -73,6 +73,7 @@ const addNote = async (note: Note, context: vscode.ExtensionContext, documentUri
   };
 
   await setExtensionData(updatedData, filePath);
+  return updatedData;
 };
 function getSelectionLines(editor: vscode.TextEditor) {
   const { start, end } = editor.selection;
@@ -108,6 +109,8 @@ export const save = async (
     language: editor.document.languageId,
   };
 
-  await addNote(fullNote, context, documentUri);
+  const result = await addNote(fullNote, context, documentUri);
   vscode.window.showInformationMessage("Note saved successfully");
+
+  return result;
 };

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { options, webviewContent } from "./webview";
-import { save } from "./data";
+import { getExtensionData, save } from "./data";
 import { PanelView } from "@vscode/webview-ui-toolkit";
 import { AddNote, AddNotePanelViewProvider } from "./AddNotePanelView";
 import { ViewNotesTreeView } from "./ViewNotesPanelView";
@@ -10,26 +10,34 @@ const selectedTextDecorationType = vscode.window.createTextEditorDecorationType(
   backgroundColor: new vscode.ThemeColor("peekViewResult.selectionBackground"),
 });
 
-const addNote =
-  (context: vscode.ExtensionContext): AddNote =>
-  async (note: string) => {
-    const editor = vscode.window.activeTextEditor;
+const addNote = async (context: vscode.ExtensionContext, note: string) => {
+  const editor = vscode.window.activeTextEditor;
 
-    if (!editor) {
-      return;
-    }
+  if (!editor) {
+    return;
+  }
 
-    await save(editor, note, context);
+  const result = await save(editor, note, context);
 
-    editor.setDecorations(selectedTextDecorationType, []);
-  };
+  editor.setDecorations(selectedTextDecorationType, []);
 
-export function activate(context: vscode.ExtensionContext) {
-  const noteForm = new AddNotePanelViewProvider(context, addNote(context));
-  const notesView = new ViewNotesTreeView(context);
+  return result;
+};
+
+export async function activate(context: vscode.ExtensionContext) {
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri;
+  const [data] = workspaceFolder ? await getExtensionData(workspaceFolder) : [{}];
+
+  const notesView = new ViewNotesTreeView(context, data);
+  const notesTree = vscode.window.createTreeView(ViewNotesTreeView.viewType, {
+    treeDataProvider: notesView,
+  });
+
+  const noteForm = new AddNotePanelViewProvider(context, (text) =>
+    addNote(context, text).then((result) => result && notesView.refresh(result))
+  );
 
   vscode.window.registerWebviewViewProvider(AddNotePanelViewProvider.viewType, noteForm);
-  vscode.window.registerTreeDataProvider(ViewNotesTreeView.viewType, notesView);
 
   const command = vscode.commands.registerCommand("source-notes.createNote", async () => {
     const editor = vscode.window.activeTextEditor;
@@ -52,7 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
 
-    await addNote(context)(result);
+    await addNote(context, result);
   });
 
   // Add command to the extension context
