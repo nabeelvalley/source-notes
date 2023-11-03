@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { options, webviewContent } from "./webview";
-import { getExtensionData, save } from "./data";
+import { ExtensionData, getExtensionData, save } from "./data";
 import { PanelView } from "@vscode/webview-ui-toolkit";
 import { AddNote, AddNotePanelViewProvider } from "./AddNotePanelView";
 import { ViewNotesTreeView } from "./ViewNotesPanelView";
@@ -33,8 +33,10 @@ export async function activate(context: vscode.ExtensionContext) {
     treeDataProvider: notesView,
   });
 
+  const refreshTree = (result?: ExtensionData) => result && notesView.refresh(result);
+
   const noteForm = new AddNotePanelViewProvider(context, (text) =>
-    addNote(context, text).then((result) => result && notesView.refresh(result))
+    addNote(context, text).then(refreshTree)
   );
 
   vscode.window.registerWebviewViewProvider(AddNotePanelViewProvider.viewType, noteForm);
@@ -50,17 +52,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const decoration = { range: new vscode.Range(start, end) };
 
-    const result = await vscode.window.showInputBox({
+    const note = await vscode.window.showInputBox({
       title: "Add Note",
       placeHolder: "Enter note text",
     });
 
     editor.setDecorations(selectedTextDecorationType, [decoration]);
-    if (!result) {
+    if (!note) {
       return;
     }
 
-    await addNote(context, result);
+    const result = await addNote(context, note);
+    refreshTree(result);
   });
 
   // Add command to the extension context
