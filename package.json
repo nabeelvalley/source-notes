@@ -3,18 +3,33 @@
   "displayName": "source-notes",
   "description": "A hello world sample extension to show off the Webview UI Toolkit for Visual Studio Code.",
   "version": "0.0.1",
-  "enabledApiProposals": [
-    "editorInsets"
-  ],
   "engines": {
     "vscode": "^1.75.0"
   },
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "addNotePanel",
+          "title": "Add Note",
+          "icon": "close"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "addNotePanel",
+          "name": "Add Note",
+          "type": "webview"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "source-notes.showHelloWorld",
-        "title": "Hello World: Show"
+        "command": "source-notes.createNote",
+        "title": "Source Notes: Create Note"
       }
     ]
   },
