@@ -85,7 +85,11 @@ function getSelectionLines(editor: vscode.TextEditor) {
   return lines;
 }
 
-export const save = (editor: vscode.TextEditor, note: string, context: vscode.ExtensionContext) => {
+export const save = async (
+  editor: vscode.TextEditor,
+  note: string,
+  context: vscode.ExtensionContext
+) => {
   console.log(editor, note);
   const documentUri = editor.document.uri;
 
@@ -99,6 +103,6 @@ export const save = (editor: vscode.TextEditor, note: string, context: vscode.Ex
     lines,
   };
 
-  addNote(fullNote, context, documentUri);
+  await addNote(fullNote, context, documentUri);
   vscode.window.showInformationMessage("Note saved successfully");
 };

@@ -1,33 +1,32 @@
 import * as vscode from "vscode";
 
-import { webviewContent } from "./webview";
+import { options, webviewContent } from "./webview";
 import { save } from "./data";
+import { PanelView } from "@vscode/webview-ui-toolkit";
+import { AddNote, PanelViewProvider } from "./PanelViewProvider";
 
 const selectedTextDecorationType = vscode.window.createTextEditorDecorationType({
   backgroundColor: new vscode.ThemeColor("peekViewResult.selectionBackground"),
 });
 
-export function activate(context: vscode.ExtensionContext) {
-  const webviewOptions: vscode.WebviewOptions = {
-    enableForms: true,
-    enableScripts: true,
-    localResourceRoots: [
-      vscode.Uri.joinPath(context.extensionUri, "out"),
-      vscode.Uri.joinPath(context.extensionUri, "src/webview"),
-      vscode.Uri.joinPath(context.extensionUri, "node_modules", "@vscode"),
-    ],
-    enableCommandUris: true,
+const addNote =
+  (context: vscode.ExtensionContext): AddNote =>
+  async (note) => {
+    const editor = vscode.window.activeTextEditor;
+
+    if (!editor) {
+      return;
+    }
+
+    await save(editor, note, context);
+
+    editor.setDecorations(selectedTextDecorationType, []);
   };
 
-  const panel = vscode.window.createWebviewPanel(
-    "addNotePanel",
-    "Add Note",
-    {
-      viewColumn: vscode.ViewColumn.One,
-      preserveFocus: true,
-    },
-    webviewOptions
-  );
+export function activate(context: vscode.ExtensionContext) {
+  const panelViewProvider = new PanelViewProvider(context, addNote(context));
+
+  vscode.window.registerWebviewViewProvider(PanelViewProvider.viewType, panelViewProvider);
 
   const command = vscode.commands.registerCommand("source-notes.createNote", () => {
     const editor = vscode.window.activeTextEditor;
@@ -40,18 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const decoration = { range: new vscode.Range(start, end) };
     editor.setDecorations(selectedTextDecorationType, [decoration]);
-
-    panel.webview.html = webviewContent(panel.webview, context.extensionUri);
-
-    panel.webview.onDidReceiveMessage((message) => {
-      console.log(message);
-
-      if (message.type === "submit") {
-        save(editor, message.note, context);
-      }
-
-      editor.setDecorations(selectedTextDecorationType, []);
-    });
+    panelViewProvider.focus();
   });
 
   // Add command to the extension context
