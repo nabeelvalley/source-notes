@@ -1,8 +1,82 @@
-import { commands, ExtensionContext, WebviewOptions, window, Range, ThemeColor, TextEdit, TextEditor } from "vscode";
+import { commands, ExtensionContext, WebviewOptions, window, Range, ThemeColor, TextEdit, TextEditor, workspace, FileType, Selection } from "vscode";
 
 import { Disposable, Webview, WebviewPanel, Uri, ViewColumn } from "vscode";
 import { getUri } from "./utilities/getUri";
 import { getNonce } from "./utilities/getNonce";
+
+interface Note {
+  file: string;
+  lines: Line[]
+  note: string;
+  language: string;
+  created: string;
+}
+
+interface Line {
+  num: number,
+  content: string
+}
+
+interface ExtensionData {
+  notes?: Partial<Note>[]
+}
+
+const getExtensionData = async (documentUri: Uri) => {
+  const documentDir = workspace.getWorkspaceFolder(documentUri)
+
+  if (!documentDir) {
+    throw new Error("Workspace not found")
+  }
+
+  const directory = Uri.joinPath(documentDir.uri, '.vscode')
+
+  try {
+    await workspace.fs.createDirectory(directory)
+  } catch (err) {
+    console.error(err)
+  }
+
+  const filePath = Uri.file(Uri.joinPath(directory, 'source-notes.json').path)
+
+  let fileExists: boolean
+  try {
+    await workspace.fs.stat(filePath)
+    fileExists = true
+  } catch (err) {
+
+    fileExists = false
+  }
+
+  const fileContents = await (fileExists && (await workspace.fs.readFile(filePath)).toString())
+  const fileData = JSON.parse(fileContents || '{}') as ExtensionData
+
+  return [fileData, filePath] as const
+}
+
+const setExtensionData = async (updateData: ExtensionData, filePath: Uri) => {
+  const updateContents = JSON.stringify(updateData, null, 2)
+  try {
+    await workspace.fs.writeFile(filePath, Buffer.from(updateContents, 'utf-8'))
+  } catch (err) {
+    console.error(err)
+    throw new Error("Error saving source-notes.json")
+  }
+}
+
+
+const addNote = async (note: Note, context: ExtensionContext, documentUri: Uri) => {
+  const [fileData, filePath] = await getExtensionData(documentUri)
+
+  const existingNotes = fileData.notes || []
+  const notes = [...existingNotes, note]
+
+  const updatedData: ExtensionData = {
+    ...fileData,
+    notes
+  }
+
+  await setExtensionData(updatedData, filePath)
+}
 
 const html = String.raw
 
@@ -51,18 +125,46 @@ const selectedTextDecorationType = window.createTextEditorDecorationType({
   backgroundColor: new ThemeColor("peekViewResult.selectionBackground"),
 });
 
-const save = (editor: TextEditor, note: string) => {
+function getSelectionLines(editor: TextEditor) {
+  const { start, end } = editor.selection;
+
+
+  const range = new Array(end.line - start.line + 1).fill(undefined).map((_, index) => start.line + index);
+  const lines = range.map<Line>(line => ({
+    num: line + 1,
+    content: editor.document.lineAt(line).text
+  }));
+  return lines;
+}
+
+const save = (editor: TextEditor, note: string, context: ExtensionContext) => {
   console.log(editor, note)
+  const documentUri = editor.document.uri
+
+
+  const lines = getSelectionLines(editor);
+
+  const fullNote: Note = {
+    note,
+    created: new Date().toISOString(),
+    file: editor.document.fileName,
+    language: editor.document.languageId,
+    lines,
+  }
+
+  addNote(fullNote, context, documentUri)
   window.showInformationMessage("Note saved successfully")
 }
+
+
 
 export function activate(context: ExtensionContext) {
   const webviewOptions: WebviewOptions = {
     enableForms: true,
     enableScripts: true,
     localResourceRoots: [
-      Uri.joinPath(context.extensionUri, "out"), 
-      Uri.joinPath(context.extensionUri, "src/webview"), 
+      Uri.joinPath(context.extensionUri, "out"),
+      Uri.joinPath(context.extensionUri, "src/webview"),
       Uri.joinPath(context.extensionUri, 'node_modules', '@vscode')],
     enableCommandUris: true
   }
@@ -87,7 +189,7 @@ export function activate(context: ExtensionContext) {
       console.log(message)
 
       if (message.type === 'submit') {
-        save(editor, message.note)
+        save(editor, message.note, context)
       }
 
       inset.dispose()
