@@ -8,7 +8,7 @@ const addNoteForm = html`
 
 export type AddNote = (text: string) => Promise<void>;
 
-export class PanelViewProvider implements vscode.WebviewViewProvider {
+export class AddNotePanelViewProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
 
   public static readonly viewType = "addNotePanel";

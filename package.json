@@ -23,6 +23,11 @@
           "id": "addNotePanel",
           "name": "Add Note",
           "type": "webview"
+        },
+        {
+          "id": "viewNotesPanel",
+          "name": "Notes",
+          "type": "tree"
         }
       ]
     },

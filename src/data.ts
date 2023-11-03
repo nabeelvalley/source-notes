@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
+import { getNonce } from "./utilities/getNonce";
 
 export interface Note {
+  id: string;
   file: string;
   lines: Line[];
   note: string;
@@ -95,12 +97,15 @@ export const save = async (
 
   const lines = getSelectionLines(editor);
 
+  const file = vscode.workspace.asRelativePath(editor.document.uri.path);
+
   const fullNote: Note = {
+    id: getNonce(),
     note,
-    created: new Date().toISOString(),
-    file: editor.document.fileName,
-    language: editor.document.languageId,
+    file,
     lines,
+    created: new Date().toISOString(),
+    language: editor.document.languageId,
   };
 
   await addNote(fullNote, context, documentUri);
