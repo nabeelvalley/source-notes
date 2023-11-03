@@ -1,6 +1,5 @@
-import { commands, ExtensionContext, WebviewOptions, window, Range, ThemeColor, TextEdit, TextEditor, workspace, FileType, Selection } from "vscode";
+import { commands, ExtensionContext, WebviewOptions, window, Range, ThemeColor, TextEditor, workspace, Webview, Uri } from "vscode";
 
-import { Disposable, Webview, WebviewPanel, Uri, ViewColumn } from "vscode";
 import { getUri } from "./utilities/getUri";
 import { getNonce } from "./utilities/getNonce";
 
