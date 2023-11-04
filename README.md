@@ -1,26 +1,5 @@
-# Hello World Sample Extension
+# Source Notes
 
-This is the sample extension that goes along with the Webview UI Toolkit [Getting Started Guide](https://github.com/microsoft/vscode-webview-toolkit/blob/main/docs/getting-started.md).
+A VSCode Extension for reading code.
 
-![A screenshot of the sample extension.](./assets/source-notes.png)
-
-## Run The Sample
-
-```bash
-# Copy sample extension locally
-npx degit microsoft/vscode-webview-ui-toolkit-samples/default/source-notes source-notes
-
-# Navigate into sample directory
-cd source-notes
-
-# Install sample dependencies
-npm install
-
-# Open sample in VS Code
-code .
-```
-
-Once the sample is open inside VS Code you can run the extension by doing the following:
-
-1. Press `F5` to open a new Extension Development Host window
-2. Inside the host window, open the command palette (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and type `Hello World: Show`
+With this extension you can make notes about parts of your codebase that can be referenced later. Handy for learning about a new codebase or just keeping a list of questions you'd like to ask a collegue tomorrow
