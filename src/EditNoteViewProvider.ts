@@ -6,7 +6,9 @@ const editNoteForm = (note: Partial<Note>) => html`
   <vscode-text-area id="note" rows="5" value="${note.note}"></vscode-text-area>
 `;
 
-export type UpdateNote = (id: string, text: string) => Promise<void>;
+export type UpdateNote = (id: string, text: string) => void;
+export type OpenFile = (note: Partial<Note>) => void;
+export type DeleteNote = (id: string) => void;
 
 export class EditNoteViewProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
@@ -16,7 +18,9 @@ export class EditNoteViewProvider implements vscode.WebviewViewProvider {
 
   public constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly updateNote: UpdateNote
+    private readonly updateNote: UpdateNote,
+    private readonly openFile: OpenFile,
+    private readonly deleteNote: DeleteNote
   ) {}
 
   private focus = () => {
