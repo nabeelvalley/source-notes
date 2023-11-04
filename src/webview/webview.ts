@@ -21,6 +21,7 @@ export const highlight = (code: string = "", language = "text") => {
 };
 
 export const html = String.raw;
+export const md = String.raw;
 
 const render = (
   nonce: string,
@@ -60,7 +61,6 @@ export const webviewContent = (
   const styleUri = getUri(webview, extensionUri, [
     "src",
     "webview",
-    view,
     "style.css",
   ]);
   const codiconsUri = getUri(webview, extensionUri, [

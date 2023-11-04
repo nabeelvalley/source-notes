@@ -34,7 +34,10 @@ export class NoteItem extends vscode.TreeItem {
     this.contextValue = "note";
 
     const markdown = new vscode.MarkdownString()
-      .appendCodeblock(note?.lines?.map((line) => line.content).join("\n") || "", note?.language)
+      .appendCodeblock(
+        note?.lines?.map((line) => line.content).join("\n") || "",
+        note?.language
+      )
       .appendMarkdown(`${note?.note}`);
 
     const lines = note?.lines || [];
@@ -43,18 +46,24 @@ export class NoteItem extends vscode.TreeItem {
     const end = lines[lines.length - 1]?.num;
 
     this.tooltip = markdown;
-    this.description = start === end ? `Line ${start}` : `Lines: ${start} to ${end}`;
+    this.description =
+      start === end ? `Line ${start}` : `Lines: ${start} to ${end}`;
   }
 }
 
 type Node = FileItem | FolderItem;
 
-export class ViewNotesTreeView implements vscode.TreeDataProvider<vscode.TreeItem> {
-  public static readonly viewType = "viewNotesPanel";
+export class ViewNotesTreeView
+  implements vscode.TreeDataProvider<vscode.TreeItem>
+{
+  public static readonly viewType = "exportMarkdownPanel";
 
   private tree: Node[] = [];
 
-  constructor(private readonly context: vscode.ExtensionContext, private data: ExtensionData) {
+  constructor(
+    private readonly context: vscode.ExtensionContext,
+    private data: ExtensionData
+  ) {
     this.tree = this.createNoteTree(data.notes);
   }
 
@@ -81,9 +90,12 @@ export class ViewNotesTreeView implements vscode.TreeDataProvider<vscode.TreeIte
   onDidChangeTreeData = this.treeChange.event;
 
   createNoteTree = (notes: TreeNote[] = [], level = 0): Node[] => {
-    const uniqueFolders = unique(notes.map((note) => note.file?.split("/")[level])).filter(exists);
+    const uniqueFolders = unique(
+      notes.map((note) => note.file?.split("/")[level])
+    ).filter(exists);
 
-    const atLevel = (file: string, node?: TreeNote) => node?.file?.split("/")?.[level] === file;
+    const atLevel = (file: string, node?: TreeNote) =>
+      node?.file?.split("/")?.[level] === file;
     const atLeaf = (file: string, node?: TreeNote) =>
       atLevel(file, node) && node?.file?.split("/").length === level + 1;
 
@@ -102,7 +114,9 @@ export class ViewNotesTreeView implements vscode.TreeDataProvider<vscode.TreeIte
         const leafNodes = leafs.map((l) => new NoteItem(l));
         const fileNote = new FileItem(file, leafNodes);
 
-        return [afterNode, fileNote].filter(exists).filter((item) => !!item.children.length);
+        return [afterNode, fileNote]
+          .filter(exists)
+          .filter((item) => !!item.children.length);
       })
       .flat();
   };

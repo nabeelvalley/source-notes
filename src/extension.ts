@@ -1,12 +1,23 @@
 import * as vscode from "vscode";
 
-import { ExtensionData, deleteNote, getExtensionData, save, updateNote } from "./data";
-import { NoteItem, ViewNotesTreeView } from "./ViewNotesTreeView";
+import {
+  ExtensionData,
+  deleteNote,
+  getExtensionData,
+  save,
+  updateNote,
+} from "./data";
 import { EditNoteViewProvider, OpenFile } from "./EditNoteViewProvider";
+import { AllNotesView } from "./AllNotesView";
+import { NoteItem, ViewNotesTreeView } from "./ViewNotesTreeView";
 
-const selectedTextDecorationType = vscode.window.createTextEditorDecorationType({
-  backgroundColor: new vscode.ThemeColor("peekViewResult.selectionBackground"),
-});
+const selectedTextDecorationType = vscode.window.createTextEditorDecorationType(
+  {
+    backgroundColor: new vscode.ThemeColor(
+      "peekViewResult.selectionBackground"
+    ),
+  }
+);
 
 const addNote = async (context: vscode.ExtensionContext, note: string) => {
   const editor = vscode.window.activeTextEditor;
@@ -46,7 +57,9 @@ const openNoteFile =
 
     const fileWorkspaceFolder = vscode.Uri.joinPath(workspaceFolder, file);
 
-    const document = await vscode.workspace.openTextDocument(fileWorkspaceFolder);
+    const document = await vscode.workspace.openTextDocument(
+      fileWorkspaceFolder
+    );
     const editor = await vscode.window.showTextDocument(document);
 
     const start = lines?.[0]?.num;
@@ -68,7 +81,9 @@ const openNoteFile =
 
 export async function activate(context: vscode.ExtensionContext) {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri;
-  const [data] = workspaceFolder ? await getExtensionData(workspaceFolder) : [{}];
+  const [data] = workspaceFolder
+    ? await getExtensionData(workspaceFolder)
+    : [{}];
 
   if (!workspaceFolder) {
     // must be in a workspace to use the extension
@@ -81,7 +96,8 @@ export async function activate(context: vscode.ExtensionContext) {
     notesView
   );
 
-  const refreshTree = (result?: ExtensionData) => result && notesView.refresh(result);
+  const refreshTree = (result?: ExtensionData) =>
+    result && notesView.refresh(result);
 
   const noteForm = new EditNoteViewProvider(
     context,
@@ -95,34 +111,37 @@ export async function activate(context: vscode.ExtensionContext) {
     noteForm
   );
 
-  const createNoteCommand = vscode.commands.registerCommand("source-notes.createNote", async () => {
-    const editor = vscode.window.activeTextEditor;
+  const createNoteCommand = vscode.commands.registerCommand(
+    "source-notes.createNote",
+    async () => {
+      const editor = vscode.window.activeTextEditor;
 
-    if (!editor) {
-      return;
+      if (!editor) {
+        return;
+      }
+
+      const { start, end } = editor.selection;
+
+      const decoration = { range: new vscode.Range(start, end) };
+
+      const note = await vscode.window.showInputBox({
+        title: "Add Note",
+        placeHolder: "Enter note text",
+      });
+
+      editor.setDecorations(selectedTextDecorationType, [decoration]);
+      if (!note) {
+        return;
+      }
+
+      const result = await addNote(context, note);
+      refreshTree(result);
+      const lastNote = result?.notes?.[result.notes?.length - 1];
+      if (lastNote) {
+        noteForm.setNote(lastNote);
+      }
     }
-
-    const { start, end } = editor.selection;
-
-    const decoration = { range: new vscode.Range(start, end) };
-
-    const note = await vscode.window.showInputBox({
-      title: "Add Note",
-      placeHolder: "Enter note text",
-    });
-
-    editor.setDecorations(selectedTextDecorationType, [decoration]);
-    if (!note) {
-      return;
-    }
-
-    const result = await addNote(context, note);
-    refreshTree(result);
-    const lastNote = result?.notes?.[result.notes?.length - 1];
-    if (lastNote) {
-      noteForm.setNote(lastNote);
-    }
-  });
+  );
 
   const deleteNoteCommand = vscode.commands.registerCommand(
     "source-notes.deleteNote",
@@ -130,7 +149,9 @@ export async function activate(context: vscode.ExtensionContext) {
       const isNoteData = data instanceof NoteItem;
       const id = isNoteData && data.note?.id;
       if (!id) {
-        vscode.window.showWarningMessage("Failed to delete note - note not found");
+        vscode.window.showWarningMessage(
+          "Failed to delete note - note not found"
+        );
         return;
       }
 
@@ -138,27 +159,60 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  const openFileCommand = vscode.commands.registerCommand("source-notes.openFile", async (data) => {
-    const isNoteData = data instanceof NoteItem;
-    const note = isNoteData && data.note;
-    if (!note) {
-      vscode.window.showWarningMessage("Failed to delete note - note not found");
-      return;
+  const viewAllNotesCommand = vscode.commands.registerCommand(
+    "source-notes.exportMarkdown",
+    async () => {
+      const [data] = await getExtensionData(workspaceFolder);
+
+      const markdown = AllNotesView.renderToMarkdown(data);
+
+      const filePath = vscode.Uri.joinPath(
+        workspaceFolder,
+        "source-notes-all-notes-export.md"
+      );
+
+      await vscode.workspace.fs.writeFile(
+        filePath,
+        Buffer.from(markdown, "utf-8")
+      );
+      const document = await vscode.workspace.openTextDocument(filePath);
+      await vscode.window.showTextDocument(document);
+
+      vscode.window.showInformationMessage("Exported markdown content");
     }
+  );
 
-    openNoteFile(workspaceFolder)(note);
-  });
+  const openFileCommand = vscode.commands.registerCommand(
+    "source-notes.openFile",
+    async (data) => {
+      const isNoteData = data instanceof NoteItem;
+      const note = isNoteData && data.note;
+      if (!note) {
+        vscode.window.showWarningMessage(
+          "Failed to delete note - note not found"
+        );
+        return;
+      }
 
-  const viewNoteCommand = vscode.commands.registerCommand("source-notes.viewNote", async (data) => {
-    const isNoteData = data instanceof NoteItem;
-    const id = isNoteData && data.note?.id;
-    if (!id) {
-      vscode.window.showWarningMessage("Failed to update note - note not found");
-      return;
+      openNoteFile(workspaceFolder)(note);
     }
+  );
 
-    noteForm.setNote(data.note);
-  });
+  const viewNoteCommand = vscode.commands.registerCommand(
+    "source-notes.viewNote",
+    async (data) => {
+      const isNoteData = data instanceof NoteItem;
+      const id = isNoteData && data.note?.id;
+      if (!id) {
+        vscode.window.showWarningMessage(
+          "Failed to update note - note not found"
+        );
+        return;
+      }
+
+      noteForm.setNote(data.note);
+    }
+  );
 
   context.subscriptions.push(
     createNoteCommand,
@@ -166,6 +220,7 @@ export async function activate(context: vscode.ExtensionContext) {
     viewNoteCommand,
     viewNotePanel,
     noteTreePanel,
-    openFileCommand
+    openFileCommand,
+    viewAllNotesCommand
   );
 }

@@ -46,7 +46,7 @@
     "views": {
       "activityPanel": [
         {
-          "id": "viewNotesPanel",
+          "id": "exportMarkdownPanel",
           "name": "Notes",
           "type": "tree"
         },
@@ -71,6 +71,12 @@
         "shortTitle": "Edit",
         "enablement": "viewItem == note",
         "icon": "$(eye)"
+      },
+      {
+        "command": "source-notes.exportMarkdown",
+        "title": "Source Notes: Export notes to markdown",
+        "shortTitle": "Export Markdown",
+        "icon": "$(book)"
       },
       {
         "command": "source-notes.deleteNote",

@@ -5,13 +5,12 @@ import { Note } from "./data";
 const editNoteForm = (note: Partial<Note>) => html`
   <b>${note.file || ""} - Line ${note.lines?.[0].num || ""}</b>
   <pre>
-    <code>
-      ${highlight(
-    note.lines?.map((line) => line.content).join("\n"),
-    note.language
-  )}
-    </code>
-  </pre>
+    <code>${highlight(
+      note.lines?.map((line) => line.content).join("\n"),
+      note.language
+    )}</code>
+  </pre
+  >
   <vscode-text-area id="note" rows="5" value="${note.note}"></vscode-text-area>
   <vscode-button appearance="primary" id="delete">
     Delete
