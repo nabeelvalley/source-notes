@@ -1,17 +1,73 @@
 {
   "notes": [
     {
-      "id": "XU1D03Rf6VKnmKcqoeIIZsFWCV7tC4bd",
-      "note": "This is a note",
-      "file": "README.md",
+      "id": "8CsIhI8mWhwO1wBCBehtgLoW2Rnenyag",
+      "note": "we have come full circle",
+      "file": "src/webview/note/main.ts",
       "lines": [
         {
-          "num": 7,
-          "content": "> Update/Enhance to use the comment provider API: https://github.com/microsoft/vscode-extension-samples/tree/main/comment-sample"
+          "num": 12,
+          "content": "function main() {"
+        },
+        {
+          "num": 13,
+          "content": "  const note = document.getElementById(\"note\") as TextArea;"
+        },
+        {
+          "num": 14,
+          "content": "  const button = document.getElementById(\"delete\") as HTMLButtonElement;"
+        },
+        {
+          "num": 15,
+          "content": ""
+        },
+        {
+          "num": 16,
+          "content": "  const handleChange = (ev: Event) => {"
+        },
+        {
+          "num": 17,
+          "content": "    vscode.postMessage({ type: \"change\", note: (ev.target as TextArea).value });"
+        },
+        {
+          "num": 18,
+          "content": "  };"
+        },
+        {
+          "num": 19,
+          "content": ""
+        },
+        {
+          "num": 20,
+          "content": "  const handleDelete = () => {"
+        },
+        {
+          "num": 21,
+          "content": "    vscode.postMessage({ type: \"delete\" });"
+        },
+        {
+          "num": 22,
+          "content": "  };"
+        },
+        {
+          "num": 23,
+          "content": ""
+        },
+        {
+          "num": 24,
+          "content": "  note.addEventListener(\"change\", handleChange);"
+        },
+        {
+          "num": 25,
+          "content": "  button.addEventListener(\"click\", handleDelete);"
+        },
+        {
+          "num": 26,
+          "content": "}"
         }
       ],
-      "created": "2023-11-04T19:08:36.173Z",
-      "language": "markdown"
+      "created": "2023-11-04T19:15:48.928Z",
+      "language": "typescript"
     }
   ]
 }

@@ -2,8 +2,10 @@
 .vscode-test/**
 !out/**
 node_modules/**
-node_modules/@vscode/codicons
-node_modules/highlight.js
+!node_modules/highlight.js/styles/github-dark.min.css
+!node_modules/highlight.js/styles/github.min.css
+!node_modules/highlight.js/styles/a11y-dark.min.css
+!node_modules/highlight.js/styles/a11y.min.css
 !src/**
 esbuild.js
 .gitignore
