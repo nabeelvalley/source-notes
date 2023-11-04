@@ -1,12 +1,15 @@
 import * as vscode from "vscode";
-import { html, options, webviewContent } from "./webview/webview";
+import { highlight, html, options, webviewContent } from "./webview/webview";
 import { Note } from "./data";
 
 const editNoteForm = (note: Partial<Note>) => html`
   <b>${note.file || ""} - Line ${note.lines?.[0].num || ""}</b>
   <pre>
     <code>
-      ${note.lines?.map((line) => line.content).join("\n")}
+      ${highlight(
+    note.lines?.map((line) => line.content).join("\n"),
+    note.language
+  )}
     </code>
   </pre>
   <vscode-text-area id="note" rows="5" value="${note.note}"></vscode-text-area>
@@ -65,7 +68,7 @@ export class EditNoteViewProvider implements vscode.WebviewViewProvider {
     this.focus();
   };
 
-  private render = () => {
+  private render = async () => {
     if (!this.view) {
       return;
     }
