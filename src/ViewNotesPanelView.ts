@@ -123,7 +123,7 @@ export class ViewNotesTreeView implements vscode.TreeDataProvider<vscode.TreeIte
         const leafNodes = leafs.map((l) => new NoteItem(l));
         const fileNote = new FileItem(file, leafNodes);
 
-        return [afterNode, fileNote].filter(exists);
+        return [afterNode, fileNote].filter(exists).filter((item) => !!item.children.length);
       })
       .flat();
   };
