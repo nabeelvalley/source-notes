@@ -16,6 +16,7 @@ interface TreeNote extends Partial<Note> {
 class FolderItem extends vscode.TreeItem {
   constructor(label: string, public readonly children: FileItem[] = []) {
     super(label, vscode.TreeItemCollapsibleState.Expanded);
+    this.iconPath = vscode.ThemeIcon.Folder;
   }
 }
 
@@ -24,6 +25,7 @@ class FileItem extends vscode.TreeItem {
     super(label, vscode.TreeItemCollapsibleState.Expanded);
 
     this.tooltip = label;
+    this.iconPath = vscode.ThemeIcon.File;
   }
 }
 
