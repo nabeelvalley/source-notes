@@ -77,7 +77,7 @@ export class AllNotesView {
     const notes = data.notes || [];
     const markdownNotes = notes
       .map((note, i) => markdownNote(note, note.file !== notes[i - 1]?.file))
-      .join("\n");
+      .join("\n\n");
 
     return md`# Notes
 
