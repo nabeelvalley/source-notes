@@ -28,7 +28,7 @@ const unique = <T>(data: T[]) => Array.from(new Set(data));
 const exists = <T>(data?: T): data is T => !!data;
 
 export class NoteItem extends vscode.TreeItem {
-  constructor(private readonly note?: Partial<Note>) {
+  constructor(public readonly note?: Partial<Note>) {
     super(note?.note || "", vscode.TreeItemCollapsibleState.None);
 
     this.contextValue = "note";

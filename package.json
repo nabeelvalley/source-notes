@@ -62,7 +62,7 @@
         "command": "source-notes.deleteNote",
         "title": "Source Notes: Delete Note",
         "shortTitle": "Delete",
-        "icon": "$(delete)"
+        "icon": "$(trash)"
       }
     ]
   },

@@ -68,21 +68,21 @@ export async function activate(context: vscode.ExtensionContext) {
   const deleteNoteCommand = vscode.commands.registerCommand(
     "source-notes.deleteNote",
     async (data) => {
-      if (!(data instanceof NoteItem)) {
-        return;
-      }
-
-      const id = data.id;
+      const isNoteData = data instanceof NoteItem;
+      const id = isNoteData && data.note?.id;
       if (!id) {
+        vscode.window.showWarningMessage("Failed to delete note - note not found");
         return;
       }
 
       if (!workspaceFolder) {
+        vscode.window.showWarningMessage("Notes cannot be deleted from outside of their workspace");
         return;
       }
 
       const result = await deleteNote(id, workspaceFolder, context);
       refreshTree(result);
+      vscode.window.showInformationMessage("Note deleted");
     }
   );
 
