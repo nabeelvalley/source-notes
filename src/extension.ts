@@ -27,10 +27,10 @@ export async function activate(context: vscode.ExtensionContext) {
   const [data] = workspaceFolder ? await getExtensionData(workspaceFolder) : [{}];
 
   const notesView = new ViewNotesTreeView(context, data);
-  const notesTree = vscode.window.createTreeView(ViewNotesTreeView.viewType, {
-    treeDataProvider: notesView,
-    showCollapseAll: true,
-  });
+  const noteTreePanel = vscode.window.registerTreeDataProvider(
+    ViewNotesTreeView.viewType,
+    notesView
+  );
 
   const refreshTree = (result?: ExtensionData) => result && notesView.refresh(result);
 
@@ -38,7 +38,10 @@ export async function activate(context: vscode.ExtensionContext) {
     addNote(context, text).then(refreshTree)
   );
 
-  vscode.window.registerWebviewViewProvider(AddNotePanelViewProvider.viewType, noteForm);
+  const addNotePanel = vscode.window.registerWebviewViewProvider(
+    AddNotePanelViewProvider.viewType,
+    noteForm
+  );
 
   const createNoteCommand = vscode.commands.registerCommand("source-notes.createNote", async () => {
     const editor = vscode.window.activeTextEditor;
@@ -87,5 +90,5 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Add command to the extension context
-  context.subscriptions.push(createNoteCommand);
+  context.subscriptions.push(createNoteCommand, deleteNoteCommand, addNotePanel, noteTreePanel);
 }
