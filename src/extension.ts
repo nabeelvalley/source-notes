@@ -31,6 +31,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const notesView = new ViewNotesTreeView(context, data);
   const notesTree = vscode.window.createTreeView(ViewNotesTreeView.viewType, {
     treeDataProvider: notesView,
+    showCollapseAll: true,
   });
 
   const refreshTree = (result?: ExtensionData) => result && notesView.refresh(result);
