@@ -1,0 +1,17 @@
+{
+  "notes": [
+    {
+      "id": "XU1D03Rf6VKnmKcqoeIIZsFWCV7tC4bd",
+      "note": "This is a note",
+      "file": "README.md",
+      "lines": [
+        {
+          "num": 7,
+          "content": "> Update/Enhance to use the comment provider API: https://github.com/microsoft/vscode-extension-samples/tree/main/comment-sample"
+        }
+      ],
+      "created": "2023-11-04T19:08:36.173Z",
+      "language": "markdown"
+    }
+  ]
+}

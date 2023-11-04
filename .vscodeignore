@@ -4,7 +4,7 @@
 node_modules/**
 node_modules/@vscode/codicons
 node_modules/highlight.js
-src/**
+!src/**
 esbuild.js
 .gitignore
 .yarnrc
