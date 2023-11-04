@@ -14,3 +14,8 @@ main {
   grid-auto-flow: row;
   gap: 0.5rem;
 }
+
+pre,
+code {
+  white-space: pre-wrap;
+}

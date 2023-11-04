@@ -56,7 +56,10 @@ const openNoteFile =
       return;
     }
 
-    const range = new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0));
+    const range = new vscode.Range(
+      new vscode.Position(start - 1, 0),
+      new vscode.Position(end - 1, Infinity)
+    );
     editor.revealRange(range);
 
     const selection = new vscode.Selection(start, 0, end + 1, 0);
@@ -115,6 +118,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const result = await addNote(context, note);
     refreshTree(result);
+    const lastNote = result?.notes?.[result.notes?.length - 1];
+    if (lastNote) {
+      noteForm.setNote(lastNote);
+    }
   });
 
   const deleteNoteCommand = vscode.commands.registerCommand(
