@@ -20,6 +20,7 @@ code {
   margin: 0;
   white-space: pre-wrap;
   color: unset;
+  word-break: break-word;
 }
 
 pre {
