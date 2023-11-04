@@ -2,6 +2,7 @@
   "name": "source-notes",
   "displayName": "Source Notes",
   "description": "An extension for reading code",
+  "publisher": "Nabeel Valley",
   "repository": {
     "url": "https://github.com/nabeelvalley/source-notes"
   },
