@@ -119,7 +119,7 @@
     "compile": "node ./esbuild.js",
     "package": "node ./esbuild.js",
     "watch": "node ./esbuild.js --watch",
-    "publish": "vsce publish"
+    "publish": "vsce publish -p $(VSCE_PAT)"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
