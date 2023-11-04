@@ -25,6 +25,15 @@
           "group": "inline"
         },
         {
+          "command": "source-notes.openFile",
+          "when": "viewItem == note",
+          "group": "inline"
+        },
+        {
+          "command": "source-notes.openFile",
+          "when": "viewItem == note"
+        },
+        {
           "command": "source-notes.viewNote",
           "when": "viewItem == note"
         },
@@ -69,6 +78,13 @@
         "shortTitle": "Delete",
         "enablement": "viewItem == note",
         "icon": "$(trash)"
+      },
+      {
+        "command": "source-notes.openFile",
+        "title": "Source Notes: Open File",
+        "shortTitle": "Open File",
+        "enablement": "viewItem == note",
+        "icon": "$(go-to-file)"
       }
     ]
   },
