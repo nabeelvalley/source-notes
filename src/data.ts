@@ -116,13 +116,30 @@ export const save = async (
   return result;
 };
 
-export const deleteNote = async (
-  noteId: string,
-  workspaceUri: vscode.Uri,
-  context: vscode.ExtensionContext
-) => {
+export const deleteNote = async (noteId: string, workspaceUri: vscode.Uri) => {
   const [data, file] = await getExtensionData(workspaceUri);
   const notes = (data.notes || []).filter((note) => note.id !== noteId);
+
+  const updatedData: ExtensionData = {
+    ...data,
+    notes,
+  };
+
+  await setExtensionData(updatedData, file);
+
+  return updatedData;
+};
+
+export const updateNote = async (noteId: string, text: string, workspaceUri: vscode.Uri) => {
+  const [data, file] = await getExtensionData(workspaceUri);
+  const notes = (data.notes || []).map<Partial<Note>>((note) =>
+    note.id === noteId
+      ? {
+          ...note,
+          note: text,
+        }
+      : note
+  );
 
   const updatedData: ExtensionData = {
     ...data,

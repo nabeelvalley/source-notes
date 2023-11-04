@@ -10,14 +10,14 @@ provideVSCodeDesignSystem().register(allComponents);
 const vscode = acquireVsCodeApi();
 
 function main() {
-  const submit = document.getElementById("submit") as Button;
   const note = document.getElementById("note") as TextArea;
+  console.log({ note });
 
-  const handleSubmit = () => {
-    vscode.postMessage({ type: "submit", note: note.value });
+  const handleChange = (ev: Event) => {
+    vscode.postMessage({ type: "change", note: (ev.target as TextArea).value });
   };
 
-  submit.addEventListener("click", handleSubmit);
+  note.addEventListener("change", handleChange);
 }
 
 window.addEventListener("load", main);

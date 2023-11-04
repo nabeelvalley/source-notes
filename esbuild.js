@@ -67,7 +67,7 @@ const watchConfig = {
         ...watchConfig,
       });
 
-      await Promise.all(webviewConfigs.map((config) => build({ ...config, watchConfig })));
+      await Promise.all(webviewConfigs.map((config) => build({ ...config, ...watchConfig })));
       console.log("[watch] build finished");
     } else {
       // Build extension and webview code

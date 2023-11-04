@@ -74,20 +74,6 @@ export class ViewNotesTreeView implements vscode.TreeDataProvider<vscode.TreeIte
     if (element instanceof FileItem) {
       return element.children;
     }
-
-    // if (!element) {
-    //   return this.getNodes(this.tree);
-    // }
-
-    // if (element instanceof FileItem) {
-    //   return this.getNodes(element.notes);
-    // }
-
-    // if (element instanceof NoteItem) {
-    //   return [];
-    // }
-
-    // return [];
   }
 
   treeChange = new vscode.EventEmitter<undefined>();
@@ -95,11 +81,6 @@ export class ViewNotesTreeView implements vscode.TreeDataProvider<vscode.TreeIte
   onDidChangeTreeData = this.treeChange.event;
 
   createNoteTree = (notes: TreeNote[] = [], level = 0): Node[] => {
-    // 1. go through all nodes and use the split at the input level
-    // 2. always have a node at the level of the split
-    // 3. if an exact value exists, use that data, otherwise default empty
-    // 4. iterate through everyhing that starts with the entire current node to get the output children set
-
     const uniqueFolders = unique(notes.map((note) => note.file?.split("/")[level])).filter(exists);
 
     const atLevel = (file: string, node?: TreeNote) => node?.file?.split("/")?.[level] === file;

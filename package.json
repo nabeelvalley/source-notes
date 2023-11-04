@@ -20,28 +20,32 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "source-notes.editNote",
-          "when": "view == viewNotesPanel && viewItem == note",
+          "command": "source-notes.viewNote",
+          "when": "viewItem == note",
           "group": "inline"
         },
         {
+          "command": "source-notes.viewNote",
+          "when": "viewItem == note"
+        },
+        {
           "command": "source-notes.deleteNote",
-          "when": "view == viewNotesPanel && viewItem == note",
-          "group": "inline"
+          "when": "viewItem == note"
         }
       ]
     },
     "views": {
       "activityPanel": [
         {
-          "id": "addNotePanel",
-          "name": "Add Note",
-          "type": "webview"
-        },
-        {
           "id": "viewNotesPanel",
           "name": "Notes",
           "type": "tree"
+        },
+        {
+          "id": "viewNotePanel",
+          "name": "View Note",
+          "type": "webview",
+          "visibility": "collapsed"
         }
       ]
     },
@@ -53,15 +57,17 @@
         "icon": "$(plus)"
       },
       {
-        "command": "source-notes.editNote",
-        "title": "Source Notes: Edit Note",
+        "command": "source-notes.viewNote",
+        "title": "Source Notes: View Note",
         "shortTitle": "Edit",
-        "icon": "$(edit)"
+        "enablement": "viewItem == note",
+        "icon": "$(eye)"
       },
       {
         "command": "source-notes.deleteNote",
         "title": "Source Notes: Delete Note",
         "shortTitle": "Delete",
+        "enablement": "viewItem == note",
         "icon": "$(trash)"
       }
     ]

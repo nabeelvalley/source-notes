@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 
-import { ExtensionData, deleteNote, getExtensionData, save } from "./data";
-import { AddNotePanelViewProvider } from "./AddNotePanelView";
+import { ExtensionData, deleteNote, getExtensionData, save, updateNote } from "./data";
 import { NoteItem, ViewNotesTreeView } from "./ViewNotesTreeView";
+import { EditNoteViewProvider } from "./EditNoteViewProvider";
 
 const selectedTextDecorationType = vscode.window.createTextEditorDecorationType({
   backgroundColor: new vscode.ThemeColor("peekViewResult.selectionBackground"),
@@ -26,6 +26,11 @@ export async function activate(context: vscode.ExtensionContext) {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri;
   const [data] = workspaceFolder ? await getExtensionData(workspaceFolder) : [{}];
 
+  if (!workspaceFolder) {
+    // must be in a workspace to use the extension
+    return;
+  }
+
   const notesView = new ViewNotesTreeView(context, data);
   const noteTreePanel = vscode.window.registerTreeDataProvider(
     ViewNotesTreeView.viewType,
@@ -34,12 +39,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const refreshTree = (result?: ExtensionData) => result && notesView.refresh(result);
 
-  const noteForm = new AddNotePanelViewProvider(context, (text) =>
-    addNote(context, text).then(refreshTree)
+  const noteForm = new EditNoteViewProvider(context, (id, text) =>
+    updateNote(id, text, workspaceFolder).then(notesView.refresh)
   );
 
-  const addNotePanel = vscode.window.registerWebviewViewProvider(
-    AddNotePanelViewProvider.viewType,
+  const viewNotePanel = vscode.window.registerWebviewViewProvider(
+    EditNoteViewProvider.viewType,
     noteForm
   );
 
@@ -78,17 +83,28 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      if (!workspaceFolder) {
-        vscode.window.showWarningMessage("Notes cannot be deleted from outside of their workspace");
-        return;
-      }
-
-      const result = await deleteNote(id, workspaceFolder, context);
+      const result = await deleteNote(id, workspaceFolder);
       refreshTree(result);
       vscode.window.showInformationMessage("Note deleted");
     }
   );
 
-  // Add command to the extension context
-  context.subscriptions.push(createNoteCommand, deleteNoteCommand, addNotePanel, noteTreePanel);
+  const viewNoteCommand = vscode.commands.registerCommand("source-notes.viewNote", async (data) => {
+    const isNoteData = data instanceof NoteItem;
+    const id = isNoteData && data.note?.id;
+    if (!id) {
+      vscode.window.showWarningMessage("Failed to update note - note not found");
+      return;
+    }
+
+    noteForm.setNote(data.note);
+  });
+
+  context.subscriptions.push(
+    createNoteCommand,
+    deleteNoteCommand,
+    viewNoteCommand,
+    viewNotePanel,
+    noteTreePanel
+  );
 }
