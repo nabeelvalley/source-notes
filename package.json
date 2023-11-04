@@ -8,7 +8,15 @@
   },
   "main": "./out/extension.js",
   "contributes": {
-    "viewsContainers": {},
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "activityPanel",
+          "title": "Source Notes",
+          "icon": "$(notebook)"
+        }
+      ]
+    },
     "menus": {
       "view/item/context": [
         {
@@ -24,7 +32,7 @@
       ]
     },
     "views": {
-      "explorer": [
+      "activityPanel": [
         {
           "id": "addNotePanel",
           "name": "Add Note",
@@ -48,13 +56,13 @@
         "command": "source-notes.editNote",
         "title": "Source Notes: Edit Note",
         "shortTitle": "Edit",
-        "icon": "$(trash)"
+        "icon": "$(edit)"
       },
       {
         "command": "source-notes.deleteNote",
         "title": "Source Notes: Delete Note",
-        "shortTitle": "Edit",
-        "icon": "$(edit)"
+        "shortTitle": "Delete",
+        "icon": "$(delete)"
       }
     ]
   },
