@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { html, options, webviewContent } from "./webview";
+import { html, options, webviewContent } from "./webview/webview";
 
 const addNoteForm = html`
   <vscode-text-area id="note" rows="5"></vscode-text-area>
@@ -47,7 +47,7 @@ export class AddNotePanelViewProvider implements vscode.WebviewViewProvider {
       return;
     }
 
-    const html = webviewContent(this.view.webview, this.context.extensionUri, addNoteForm);
+    const html = webviewContent("note", this.view.webview, this.context.extensionUri, addNoteForm);
 
     this.view.webview.html = html;
     this.view.webview.onDidReceiveMessage(this.onMessage);

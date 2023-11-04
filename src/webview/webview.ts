@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
-import { getUri } from "./utilities/getUri";
-import { getNonce } from "./utilities/getNonce";
+import { getUri } from "../utilities/getUri";
+import { getNonce } from "../utilities/getNonce";
 
 export const html = String.raw;
 
-const view = (
+const render = (
   nonce: string,
   webviewUri: vscode.Uri,
   styleUri: vscode.Uri,
@@ -28,9 +28,16 @@ const view = (
   </html>
 `;
 
-export const webviewContent = (webview: vscode.Webview, extensionUri: vscode.Uri, html: string) => {
-  const webviewUri = getUri(webview, extensionUri, ["out", "webview.js"]);
-  const styleUri = getUri(webview, extensionUri, ["src", "webview", "style.css"]);
+type View = "note" | "notes";
+
+export const webviewContent = (
+  view: View,
+  webview: vscode.Webview,
+  extensionUri: vscode.Uri,
+  html: string
+) => {
+  const webviewUri = getUri(webview, extensionUri, ["out", view, "main.js"]);
+  const styleUri = getUri(webview, extensionUri, ["src", "webview", view, "style.css"]);
   const codiconsUri = getUri(webview, extensionUri, [
     "node_modules",
     "@vscode/codicons",
@@ -40,7 +47,7 @@ export const webviewContent = (webview: vscode.Webview, extensionUri: vscode.Uri
 
   const nonce = getNonce();
 
-  return view(nonce, webviewUri, styleUri, codiconsUri, html);
+  return render(nonce, webviewUri, styleUri, codiconsUri, html);
 };
 
 export const options = (context: vscode.ExtensionContext): vscode.WebviewOptions => ({

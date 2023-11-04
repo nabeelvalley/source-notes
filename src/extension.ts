@@ -1,10 +1,8 @@
 import * as vscode from "vscode";
 
-import { options, webviewContent } from "./webview";
-import { ExtensionData, getExtensionData, save } from "./data";
-import { PanelView } from "@vscode/webview-ui-toolkit";
-import { AddNote, AddNotePanelViewProvider } from "./AddNotePanelView";
-import { ViewNotesTreeView } from "./ViewNotesPanelView";
+import { ExtensionData, deleteNote, getExtensionData, save } from "./data";
+import { AddNotePanelViewProvider } from "./AddNotePanelView";
+import { NoteItem, ViewNotesTreeView } from "./ViewNotesTreeView";
 
 const selectedTextDecorationType = vscode.window.createTextEditorDecorationType({
   backgroundColor: new vscode.ThemeColor("peekViewResult.selectionBackground"),
@@ -42,7 +40,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.window.registerWebviewViewProvider(AddNotePanelViewProvider.viewType, noteForm);
 
-  const command = vscode.commands.registerCommand("source-notes.createNote", async () => {
+  const createNoteCommand = vscode.commands.registerCommand("source-notes.createNote", async () => {
     const editor = vscode.window.activeTextEditor;
 
     if (!editor) {
@@ -67,6 +65,27 @@ export async function activate(context: vscode.ExtensionContext) {
     refreshTree(result);
   });
 
+  const deleteNoteCommand = vscode.commands.registerCommand(
+    "source-notes.deleteNote",
+    async (data) => {
+      if (!(data instanceof NoteItem)) {
+        return;
+      }
+
+      const id = data.id;
+      if (!id) {
+        return;
+      }
+
+      if (!workspaceFolder) {
+        return;
+      }
+
+      const result = await deleteNote(id, workspaceFolder, context);
+      refreshTree(result);
+    }
+  );
+
   // Add command to the extension context
-  context.subscriptions.push(command);
+  context.subscriptions.push(createNoteCommand);
 }

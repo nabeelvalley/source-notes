@@ -19,8 +19,8 @@ export interface ExtensionData {
   notes?: Partial<Note>[];
 }
 
-export const getExtensionData = async (documentUri: vscode.Uri) => {
-  const documentDir = vscode.workspace.getWorkspaceFolder(documentUri);
+export const getExtensionData = async (workspaceUri: vscode.Uri) => {
+  const documentDir = vscode.workspace.getWorkspaceFolder(workspaceUri);
 
   if (!documentDir) {
     throw new Error("Workspace not found");
@@ -75,6 +75,7 @@ const addNote = async (note: Note, context: vscode.ExtensionContext, documentUri
   await setExtensionData(updatedData, filePath);
   return updatedData;
 };
+
 function getSelectionLines(editor: vscode.TextEditor) {
   const { start, end } = editor.selection;
 
@@ -113,4 +114,22 @@ export const save = async (
   vscode.window.showInformationMessage("Note saved successfully");
 
   return result;
+};
+
+export const deleteNote = async (
+  noteId: string,
+  workspaceUri: vscode.Uri,
+  context: vscode.ExtensionContext
+) => {
+  const [data, file] = await getExtensionData(workspaceUri);
+  const notes = (data.notes || []).filter((note) => note.id !== noteId);
+
+  const updatedData: ExtensionData = {
+    ...data,
+    notes,
+  };
+
+  await setExtensionData(updatedData, file);
+
+  return updatedData;
 };

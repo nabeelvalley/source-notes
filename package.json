@@ -8,12 +8,18 @@
   },
   "main": "./out/extension.js",
   "contributes": {
-    "viewsContainers": {
-      "panel": [
+    "viewsContainers": {},
+    "menus": {
+      "view/item/context": [
         {
-          "id": "addNotePanel",
-          "title": "Add Note",
-          "icon": "close"
+          "command": "source-notes.editNote",
+          "when": "view == viewNotesPanel && viewItem == note",
+          "group": "inline"
+        },
+        {
+          "command": "source-notes.deleteNote",
+          "when": "view == viewNotesPanel && viewItem == note",
+          "group": "inline"
         }
       ]
     },
@@ -34,7 +40,21 @@
     "commands": [
       {
         "command": "source-notes.createNote",
-        "title": "Source Notes: Create Note"
+        "title": "Source Notes: Create Note",
+        "shortTitle": "Create Note",
+        "icon": "$(plus)"
+      },
+      {
+        "command": "source-notes.editNote",
+        "title": "Source Notes: Edit Note",
+        "shortTitle": "Edit",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "source-notes.deleteNote",
+        "title": "Source Notes: Delete Note",
+        "shortTitle": "Edit",
+        "icon": "$(edit)"
       }
     ]
   },

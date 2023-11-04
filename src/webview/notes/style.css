@@ -1,0 +1,16 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  display: grid;
+  grid-auto-flow: row;
+  gap: 0.5rem;
+}

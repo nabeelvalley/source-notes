@@ -1,11 +1,5 @@
 import * as vscode from "vscode";
-import { html, options, webviewContent } from "./webview";
 import { ExtensionData, Note } from "./data";
-
-const addNoteForm = html`
-  <vscode-text-area id="note" rows="5"></vscode-text-area>
-  <vscode-button id="submit">Create Note</vscode-button>
-`;
 
 export type AddNote = (text: string) => Promise<void>;
 
@@ -33,15 +27,17 @@ const unique = <T>(data: T[]) => Array.from(new Set(data));
 
 const exists = <T>(data?: T): data is T => !!data;
 
-class NoteItem extends vscode.TreeItem {
-  constructor(note: Partial<Note>) {
-    super(note.note || "", vscode.TreeItemCollapsibleState.None);
+export class NoteItem extends vscode.TreeItem {
+  constructor(private readonly note?: Partial<Note>) {
+    super(note?.note || "", vscode.TreeItemCollapsibleState.None);
+
+    this.contextValue = "note";
 
     const markdown = new vscode.MarkdownString()
-      .appendCodeblock(note.lines?.map((line) => line.content).join("\n") || "", note.language)
-      .appendMarkdown(`${note.note}`);
+      .appendCodeblock(note?.lines?.map((line) => line.content).join("\n") || "", note?.language)
+      .appendMarkdown(`${note?.note}`);
 
-    const lines = note.lines || [];
+    const lines = note?.lines || [];
 
     const start = lines[0]?.num;
     const end = lines[lines.length - 1]?.num;
