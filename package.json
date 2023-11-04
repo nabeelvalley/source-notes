@@ -1,8 +1,20 @@
 {
   "name": "source-notes",
-  "displayName": "source-notes",
-  "description": "A hello world sample extension to show off the Webview UI Toolkit for Visual Studio Code.",
+  "displayName": "Source Notes",
+  "description": "An extension for reading code",
+  "author": {
+    "name": "Nabeel Valley",
+    "url": "https://nabeelvalley.co.za"
+  },
   "version": "0.0.1",
+  "keywords": [
+    "note",
+    "notes",
+    "reading",
+    "task",
+    "productivity",
+    "todo"
+  ],
   "engines": {
     "vscode": "^1.75.0"
   },
