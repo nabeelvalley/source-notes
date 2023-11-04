@@ -110,12 +110,12 @@
     ]
   },
   "scripts": {
+    "vsce": "vsce",
     "vscode:prepublish": "npm run package",
     "compile": "node ./esbuild.js",
     "package": "node ./esbuild.js",
     "watch": "node ./esbuild.js --watch",
-    "vsce": "vsce",
-    "publish": "vsce"
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
