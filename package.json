@@ -66,6 +66,11 @@
           "command": "source-notes.createNote",
           "group": "inline",
           "when": "commentController == comment-controller && commentThreadIsEmpty"
+        },
+        {
+          "command": "source-notes.deleteNote",
+          "group": "group",
+          "when": "commentController == comment-controller"
         }
       ],
       "comments/comment/context": [
@@ -77,6 +82,13 @@
         {
           "command": "source-notes.saveNote",
           "group": "inline",
+          "when": "commentController == comment-controller"
+        }
+      ],
+      "comments/comment/title": [
+        {
+          "command": "source-notes.deleteNote",
+          "group": "group",
           "when": "commentController == comment-controller"
         }
       ]
@@ -128,7 +140,7 @@
         "command": "source-notes.deleteNote",
         "title": "Source Notes: Delete Note",
         "shortTitle": "Delete",
-        "enablement": "viewItem == note",
+        "enablement": "viewItem == note || commentController == comment-controller",
         "icon": "$(trash)"
       },
       {

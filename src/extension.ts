@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 
 import {
   ExtensionData,
+  Line,
+  Note,
   deleteNote,
   getExtensionData,
   save,
@@ -18,6 +20,27 @@ const selectedTextDecorationType = vscode.window.createTextEditorDecorationType(
     ),
   }
 );
+class NoteComment implements vscode.Comment {
+  id?: string;
+  body: string | vscode.MarkdownString;
+  mode: vscode.CommentMode;
+  author: vscode.CommentAuthorInformation;
+  contextValue?: string | undefined;
+  timestamp?: Date | undefined;
+
+  constructor(note: Partial<Note>) {
+    this.id = note.id;
+    this.body = note.note || "No Content";
+    this.author = {
+      name: "Source Notes",
+    };
+
+    this.mode = vscode.CommentMode.Preview;
+    this.timestamp = note.created
+      ? new Date(Date.parse(note.created))
+      : undefined;
+  }
+}
 
 const addNote = async (
   context: vscode.ExtensionContext,
@@ -37,6 +60,22 @@ const addNote = async (
   editor.setDecorations(selectedTextDecorationType, []);
 
   return result;
+};
+
+const getRangeFromLines = (lines: Line[] = []) => {
+  const start = lines?.[0]?.num;
+  const end = lines?.[lines?.length - 1]?.num;
+
+  if (!start && end) {
+    return;
+  }
+
+  const range = new vscode.Range(
+    new vscode.Position(start - 1, 0),
+    new vscode.Position(end - 1, Infinity)
+  );
+
+  return range;
 };
 
 const handleDelete = async (
@@ -67,23 +106,63 @@ const openNoteFile =
       fileWorkspaceFolder
     );
     const editor = await vscode.window.showTextDocument(document);
+    const range = getRangeFromLines(lines);
 
-    const start = lines?.[0]?.num;
-    const end = lines?.[lines?.length - 1]?.num;
-
-    if (!start && end) {
+    if (!range) {
       return;
     }
 
-    const range = new vscode.Range(
-      new vscode.Position(start - 1, 0),
-      new vscode.Position(end - 1, Infinity)
-    );
     editor.revealRange(range);
 
-    const selection = new vscode.Selection(start, 0, end + 1, 0);
+    const selection = new vscode.Selection(
+      range.start.line + 1,
+      0,
+      range.end.line + 1,
+      0
+    );
     editor.selections = [selection];
   };
+
+const initializeCommentController = async (
+  workspaceFolder: vscode.Uri,
+  data?: ExtensionData
+) => {
+  const commentController = vscode.comments.createCommentController(
+    "comment-controller",
+    "Source Notes"
+  );
+
+  // A `CommentingRangeProvider` controls where gutter decorations that allow adding comments are shown
+  commentController.commentingRangeProvider = {
+    provideCommentingRanges: (
+      document: vscode.TextDocument,
+      token: vscode.CancellationToken
+    ) => {
+      const lineCount = document.lineCount;
+      return [new vscode.Range(0, 0, lineCount - 1, 0)];
+    },
+  };
+
+  data?.notes?.forEach((note) => {
+    if (!(note.file && note.note)) {
+      return;
+    }
+
+    const range = getRangeFromLines(note.lines);
+
+    if (!range) {
+      return;
+    }
+
+    commentController.createCommentThread(
+      vscode.Uri.joinPath(workspaceFolder, note.file),
+      range,
+      [new NoteComment(note)]
+    );
+  });
+
+  return commentController;
+};
 
 export async function activate(context: vscode.ExtensionContext) {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri;
@@ -102,8 +181,19 @@ export async function activate(context: vscode.ExtensionContext) {
     notesView
   );
 
-  const refreshTree = (result?: ExtensionData) =>
-    result && notesView.refresh(result);
+  const refreshTree = async (result?: ExtensionData) => {
+    if (!result) {
+      return;
+    }
+
+    notesView.refresh(result);
+
+    commentController.dispose();
+    commentController = await initializeCommentController(
+      workspaceFolder,
+      data
+    );
+  };
 
   const noteForm = new EditNoteViewProvider(
     context,
@@ -117,21 +207,10 @@ export async function activate(context: vscode.ExtensionContext) {
     noteForm
   );
 
-  const commentController = vscode.comments.createCommentController(
-    "comment-controller",
-    "Comments"
+  let commentController = await initializeCommentController(
+    workspaceFolder,
+    data
   );
-
-  // A `CommentingRangeProvider` controls where gutter decorations that allow adding comments are shown
-  commentController.commentingRangeProvider = {
-    provideCommentingRanges: (
-      document: vscode.TextDocument,
-      token: vscode.CancellationToken
-    ) => {
-      const lineCount = document.lineCount;
-      return [new vscode.Range(0, 0, lineCount - 1, 0)];
-    },
-  };
 
   const getActiveEditor = async (comment?: vscode.CommentReply) => {
     const commentUri = comment?.thread.uri;
@@ -191,14 +270,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
           comment.thread.comments = [
             ...comment.thread.comments,
-            {
-              author: {
-                name: "Source Notes",
-              },
-              body: comment.text,
-              mode: vscode.CommentMode.Preview,
-              timestamp: new Date(),
-            },
+            new NoteComment(lastNote),
           ];
         }
       }
@@ -207,9 +279,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const deleteNoteCommand = vscode.commands.registerCommand(
     "source-notes.deleteNote",
-    async (data) => {
-      const isNoteData = data instanceof NoteItem;
-      const id = isNoteData && data.note?.id;
+    async (data: NoteItem | NoteComment) => {
+      const isNoteInstance = data instanceof NoteItem;
+      const id = isNoteInstance ? data.note?.id : data.id;
       if (!id) {
         vscode.window.showWarningMessage(
           "Failed to delete note - note not found"
@@ -309,7 +381,6 @@ export async function activate(context: vscode.ExtensionContext) {
     noteTreePanel,
     openFileCommand,
     viewAllNotesCommand,
-    commentController,
     saveNoteCommand
   );
 }
