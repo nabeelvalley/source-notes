@@ -60,6 +60,25 @@
           "command": "source-notes.deleteNote",
           "when": "viewItem == note"
         }
+      ],
+      "comments/commentThread/context": [
+        {
+          "command": "source-notes.createNote",
+          "group": "inline",
+          "when": "commentController == comment-controller && commentThreadIsEmpty"
+        }
+      ],
+      "comments/comment/context": [
+        {
+          "command": "source-notes.cancelSave",
+          "group": "inline",
+          "when": "commentController == comment-controller"
+        },
+        {
+          "command": "source-notes.saveNote",
+          "group": "inline",
+          "when": "commentController == comment-controller"
+        }
       ]
     },
     "views": {
@@ -78,6 +97,14 @@
       ]
     },
     "commands": [
+      {
+        "command": "source-notes.saveNote",
+        "title": "Save"
+      },
+      {
+        "command": "source-notes.cancelSave",
+        "title": "Cancel"
+      },
       {
         "command": "source-notes.createNote",
         "title": "Source Notes: Create Note",

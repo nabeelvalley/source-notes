@@ -19,14 +19,20 @@ const selectedTextDecorationType = vscode.window.createTextEditorDecorationType(
   }
 );
 
-const addNote = async (context: vscode.ExtensionContext, note: string) => {
+const addNote = async (
+  context: vscode.ExtensionContext,
+  note: string,
+  selection: vscode.Selection
+) => {
   const editor = vscode.window.activeTextEditor;
+
+  vscode.window.activeTextEditor?.document.uri;
 
   if (!editor) {
     return;
   }
 
-  const result = await save(editor, note, context);
+  const result = await save(editor, note, context, selection);
 
   editor.setDecorations(selectedTextDecorationType, []);
 
@@ -111,34 +117,90 @@ export async function activate(context: vscode.ExtensionContext) {
     noteForm
   );
 
+  const commentController = vscode.comments.createCommentController(
+    "comment-controller",
+    "Comments"
+  );
+
+  // A `CommentingRangeProvider` controls where gutter decorations that allow adding comments are shown
+  commentController.commentingRangeProvider = {
+    provideCommentingRanges: (
+      document: vscode.TextDocument,
+      token: vscode.CancellationToken
+    ) => {
+      const lineCount = document.lineCount;
+      return [new vscode.Range(0, 0, lineCount - 1, 0)];
+    },
+  };
+
+  const getActiveEditor = async (comment?: vscode.CommentReply) => {
+    const commentUri = comment?.thread.uri;
+
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!commentUri) {
+      return [activeEditor, vscode.window.activeTextEditor?.selection] as const;
+    }
+
+    const textDocument = await vscode.workspace.openTextDocument(commentUri);
+    const editor = await vscode.window.showTextDocument(textDocument);
+
+    return [
+      editor,
+      new vscode.Selection(
+        comment.thread.range.start,
+        comment.thread.range.end
+      ),
+    ] as const;
+  };
+
   const createNoteCommand = vscode.commands.registerCommand(
     "source-notes.createNote",
-    async () => {
-      const editor = vscode.window.activeTextEditor;
+    async (comment?: vscode.CommentReply) => {
+      const [editor, selection] = await getActiveEditor(comment);
 
-      if (!editor) {
+      if (!(editor && selection)) {
         return;
       }
 
-      const { start, end } = editor.selection;
+      const { start, end } = selection;
 
       const decoration = { range: new vscode.Range(start, end) };
 
-      const note = await vscode.window.showInputBox({
-        title: "Add Note",
-        placeHolder: "Enter note text",
-      });
+      comment?.thread.uri;
 
-      editor.setDecorations(selectedTextDecorationType, [decoration]);
+      const note = await (comment?.text ||
+        vscode.window.showInputBox({
+          title: "Add Note",
+          placeHolder: "Enter note text",
+        }));
+
       if (!note) {
         return;
       }
 
-      const result = await addNote(context, note);
+      editor.setDecorations(selectedTextDecorationType, [decoration]);
+
+      const result = await addNote(context, note, selection);
       refreshTree(result);
       const lastNote = result?.notes?.[result.notes?.length - 1];
       if (lastNote) {
         noteForm.setNote(lastNote);
+        if (comment?.thread) {
+          comment.thread.collapsibleState =
+            vscode.CommentThreadCollapsibleState.Collapsed;
+
+          comment.thread.comments = [
+            ...comment.thread.comments,
+            {
+              author: {
+                name: "Source Notes",
+              },
+              body: comment.text,
+              mode: vscode.CommentMode.Preview,
+              timestamp: new Date(),
+            },
+          ];
+        }
       }
     }
   );
@@ -214,6 +276,31 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  const saveNoteCommand = vscode.commands.registerCommand(
+    "source-notes.saveNote",
+    (comment?: any) => {
+      if (!comment) {
+        return;
+      }
+
+      comment.parent.comments = comment.parent.comments.map(
+        (cmt: {
+          id: any;
+          savedBody: any;
+          body: any;
+          mode: vscode.CommentMode;
+        }) => {
+          if (cmt.id === comment.id) {
+            cmt.savedBody = cmt.body;
+            cmt.mode = vscode.CommentMode.Preview;
+          }
+
+          return cmt;
+        }
+      );
+    }
+  );
+
   context.subscriptions.push(
     createNoteCommand,
     deleteNoteCommand,
@@ -221,6 +308,8 @@ export async function activate(context: vscode.ExtensionContext) {
     viewNotePanel,
     noteTreePanel,
     openFileCommand,
-    viewAllNotesCommand
+    viewAllNotesCommand,
+    commentController,
+    saveNoteCommand
   );
 }
